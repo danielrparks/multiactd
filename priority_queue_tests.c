@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define RED "\e[0;31m"
 #define GRN "\e[0;32m"
@@ -58,9 +59,11 @@ int main() {
     test_case(500, get_num_elements());
     int previous = deque()->time_last;
     for (int i = 0; i < num_tests - 1; i++) {
-        if(deque()->time_last < previous) {
+        clock_t curr = deque()->time_last;
+        if(curr < previous) {
             printf(RED "FAILED\n" reset);
         }
+        previous = curr;
     }
 }
 
