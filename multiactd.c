@@ -1,10 +1,18 @@
 #include <getopt.h>
-#include <pwd.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <pthread.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <limits.h>
+#include <unistd.h>
 #include "config.h"
+#include "waiter.h"
+#include "command.h"
 
 int main(int argc, char* argv[]) {
 	const char* short_opts = "c:d";
@@ -50,7 +58,60 @@ int main(int argc, char* argv[]) {
 	for (size_t i = 0; i < num_config_files; i++) {
 		parse_config(config_files[i]);
 	}
-	while (true) {
-		// connect and fork loop (not done)
+	pthread_t waiter;
+	int err = pthread_create(&waiter, NULL, waiter_thread, 0);
+	if (err) {
+		perror(argv[0]);
+		exit(1);
+	}
+	struct sockaddr_un sockaddr;
+	int sock = socket(AF_UNIX, SOCK_SEQPACKET, 0);
+	if (sock) {
+		perror(argv[0]);
+		exit(1);
+	}
+	memset(&sockaddr, 0, sizeof(sock)); // man page said to do this
+	sockaddr.sun_family = AF_UNIX;
+	struct passwd* userinfo = getpwent();
+	if (!userinfo) {
+		perror(argv[0]);
+		exit(1);
+	}
+	char uids[11];
+	int uid_size;
+	snprintf(uids, 11, "%d%n", userinfo->pw_uid, &uid_size);
+	const char *sockname_begin = "/run/user/", *sockname_end = "/multiactd.sock";
+	// if increasing the socket name length, ensure there is no overflow
+	strcpy(sockaddr.sun_path, sockname_begin);
+	strcat(sockaddr.sun_path, uids);
+	strcat(sockaddr.sun_path, sockname_end);
+	err = bind(sock, (const struct sockaddr*) &sockaddr, sizeof(sockaddr));
+	if (err) {
+		perror(argv[0]);
+		exit(1);
+	}
+	err = listen(sock, 32);
+	if (err) {
+		perror(argv[0]);
+		exit(1);
+	}
+	int data_sock, pid;
+	for (;;) {
+		// accept and fork loop
+		data_sock = accept(sock, NULL, NULL);
+		if (data_sock < 0) {
+			perror(argv[0]);
+			exit(1);
+		}
+		pid = fork();
+		if (pid < 0) {
+			perror(argv[0]);
+			exit(1);
+		} else if (pid == 0) {
+			close(sock);
+			do_command(data_sock);
+		} else {
+			close(data_sock);
+		}
 	}
 }
