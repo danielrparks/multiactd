@@ -5,67 +5,61 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-uint32_t size;
-uint32_t num_elements;
+#define COMPARE(x, y, z) x->time_last y z->time_last
+
+static size_t action_queue_actual_size;
+size_t action_queue_size;
 parent_action_t** action_queue;
 
 void init_queue(){
-    size = 100;
-    num_elements = 0;
-    action_queue = malloc(size * sizeof(parent_action_t));
+    action_queue_actual_size = 100;
+    action_queue_size = 0;
+    action_queue = malloc(action_queue_actual_size * sizeof(parent_action_t));
 }
 
 void resize() {
-    size *= 2 + 1;
-    action_queue = realloc(action_queue, size * sizeof(parent_action_t));
+    action_queue_actual_size = action_queue_actual_size * 3 / 2 + 1;
+    action_queue = realloc(action_queue, action_queue_actual_size * sizeof(parent_action_t));
 }
 
 void enqueue(parent_action_t* action) {
-    if(num_elements > size - 1) {
+    if(action_queue_size >= action_queue_actual_size) {
         resize();
     }
 
-    num_elements++;
-    uint32_t index_to_place = num_elements;
-    while(index_to_place > 1 && compare_to(action, action_queue[index_to_place / 2]) < 0) { 
-        action_queue[index_to_place] = action_queue[index_to_place/2];
-        index_to_place /= 2;
+    size_t index_to_place = action_queue_size++;
+    while(index_to_place > 0 && COMPARE(action, <, action_queue[(index_to_place - 1) / 2])) { 
+        action_queue[index_to_place] = action_queue[(index_to_place - 1) / 2];
+        index_to_place = (index_to_place - 1) / 2;
     }
     action_queue[index_to_place] = action;
 }
 
-parent_action_t* deque() {
-    parent_action_t* top = action_queue[1];
-    int hole = 1;
-    bool done = false;
-    while(hole * 2 < num_elements && !done) {
-        int child = hole * 2;
-        if(compare_to(action_queue[child], action_queue[child + 1]) > 0) {
+parent_action_t* dequeue() {
+    parent_action_t* top = action_queue[0];
+    size_t hole = 0;
+    while(hole * 2 + 2 < action_queue_size) {
+        size_t child = hole * 2 + 1;
+        if(COMPARE(action_queue[child], >, action_queue[child + 1])) {
             child++;
         }
-        if(compare_to(action_queue[num_elements], action_queue[child]) > 0) {
+        if(COMPARE(action_queue[action_queue_size - 1], >, action_queue[child])) {
             action_queue[hole] = action_queue[child];
             hole = child;
         } else {
-            done = true;
+					break;
         }
     }
-    action_queue[hole] = action_queue[num_elements];
-    num_elements--;
+    action_queue[hole] = action_queue[action_queue_size - 1];
+    action_queue_size--;
     return top;
 }
 
-int compare_to(parent_action_t *first, parent_action_t *second) {
-    return first->time_last - second->time_last;
-}
-
+#ifndef NDEBUG
 void print_queue() {
-    for(int i = 1; i <= num_elements; i++) {
+    for(size_t i = 0; i < action_queue_size; i++) {
         printf("(%s %ld) ", action_queue[i]->name, action_queue[i]->time_last);
     }
     printf("\n");
 }
-
-uint32_t get_num_elements() {
-    return num_elements;
-}
+#endif
