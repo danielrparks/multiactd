@@ -1,5 +1,6 @@
 #ifndef MULTIACT_HASH
 #define MULTIACT_HASH
+#include "action.h"
 
 #define HASH_TABLE_SIZE 100;
 
