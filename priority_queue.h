@@ -3,16 +3,12 @@
 #include "action.h"
 #include <stdint.h>
 
-typedef struct heap_node {
-
-} heap_node_t;
-
-// methods for the priority queue
+extern size_t action_queue_size;
 void init_queue();
 void enqueue(parent_action_t* action);
-parent_action_t* deque();
-int32_t compare_to(parent_action_t* first, parent_action_t* second);
+parent_action_t* dequeue();
+#ifndef NDEBUG
 void print_queue();
-uint32_t get_num_elements();
+#endif
 
 #endif
