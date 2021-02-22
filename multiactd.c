@@ -1,6 +1,9 @@
 #include <getopt.h>
 #include <pwd.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include "config.h"
 
 int main(int argc, char* argv[]) {
@@ -22,7 +25,7 @@ int main(int argc, char* argv[]) {
 	};
 	char* config_files[] = {
 		"/etc/multiact/config"
-	}
+	};
 	size_t num_config_files = 1;
 	int opt;
 	bool daemonize = true;

@@ -1,5 +1,6 @@
 #include "hash.h"
 #include <stdlib.h>
+#include <string.h>
 
 parent_action_t* action_hash_table[HASH_TABLE_SIZE];
 
@@ -22,7 +23,7 @@ parent_action_t* get_action(const char* key) {
 
 void put_action(parent_action_t* val) {
 	const char* key = val->name;
-	parent_action_t** toput = action_hash_table[action_name_hash(key)];
+	parent_action_t** toput = &action_hash_table[action_name_hash(key)];
 	parent_action_t* current = *toput;
 	while (current) {
 		if (!strcmp(key, current->name)) {
