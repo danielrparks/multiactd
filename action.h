@@ -16,7 +16,7 @@ typedef struct parent_action {
 	struct child_action *children;
 	size_t num_children;
 	size_t count; // the number of times this action has happened within the time limit
-	clock_t time_last;  
+	struct timespec time_next;
 	bool needs_wait;
 	pthread_mutex_t lock;
 } parent_action_t;

@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define COMPARE(x, y, z) x->time_last y z->time_last
+pthread_mutex_t action_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+#define COMPARE(x, y, z) COMPARE_TIMESPEC(x->time_next, y, z->time_next)
 
 static size_t action_queue_actual_size;
 size_t action_queue_size;
@@ -55,10 +57,14 @@ parent_action_t* dequeue() {
     return top;
 }
 
+parent_action_t* peek() {
+	return action_queue[0];
+}
+
 #ifndef NDEBUG
 void print_queue() {
     for(size_t i = 0; i < action_queue_size; i++) {
-        printf("(%s %ld) ", action_queue[i]->name, action_queue[i]->time_last);
+        printf("(%s %ld) ", action_queue[i]->name, action_queue[i]->time_next.tv_nsec);
     }
     printf("\n");
 }
