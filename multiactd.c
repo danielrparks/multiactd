@@ -110,6 +110,7 @@ int main(int argc, char* argv[]) {
 		} else if (pid == 0) {
 			close(sock);
 			do_command(data_sock);
+			exit(0);
 		} else {
 			close(data_sock);
 		}
