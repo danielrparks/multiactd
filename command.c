@@ -39,6 +39,18 @@ int execute_shell(char* cmd) {
 	}
 }
 
+static void put_in_queue(parent_action_t* parent) {
+	pthread_mutex_lock(&action_queue_mutex);
+	if (parent->in_queue) {
+		action_queue_remove(parent);
+	} else {
+		parent->in_queue = true;
+	}
+	enqueue(parent);
+	pthread_cond_broadcast(&waiter_wakeup);
+	pthread_mutex_unlock(&action_queue_mutex);
+}
+
 void do_command(int fd) {
 	uint8_t cmdlen;
 	int ret = read(fd, &cmdlen, 1);
@@ -73,10 +85,7 @@ void do_command(int fd) {
 		}
 		if (parent->needs_wait) {
 			// send to waiter thread
-			pthread_mutex_lock(&action_queue_mutex);
-			enqueue(parent);
-			pthread_cond_broadcast(&waiter_wakeup);
-			pthread_mutex_unlock(&action_queue_mutex);
+			put_in_queue(parent);
 		} else {
 			// run the command immediately
 			parent->count++;
@@ -91,10 +100,7 @@ void do_command(int fd) {
 		}
 		timespec_add(&parent->time_next, child->time_limit);
 		if (child->needs_wait) {
-			pthread_mutex_lock(&action_queue_mutex);
-			enqueue(parent);
-			pthread_cond_broadcast(&waiter_wakeup);
-			pthread_mutex_unlock(&action_queue_mutex);
+			put_in_queue(parent);
 		} else {
 			parent->count++;
 			exitcode = execute_shell(parent->command);

@@ -28,6 +28,9 @@ static void process_action(parent_action_t* parent) {
 			execute_shell(thischild->command);
 		}
 	}
+	pthread_mutex_lock(&parent->lock);
+	parent->count = 0;
+	pthread_mutex_unlock(&parent->lock);
 }
 
 void* waiter_thread(void* id) {

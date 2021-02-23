@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 pthread_mutex_t action_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -37,24 +38,37 @@ void enqueue(parent_action_t* action) {
     action_queue[index_to_place] = action;
 }
 
+static void remove_index(size_t hole) {
+	while(hole * 2 + 2 < action_queue_size) {
+			size_t child = hole * 2 + 1;
+			if(COMPARE(action_queue[child], >, action_queue[child + 1])) {
+					child++;
+			}
+			if(COMPARE(action_queue[action_queue_size - 1], >, action_queue[child])) {
+					action_queue[hole] = action_queue[child];
+					hole = child;
+			} else {
+				break;
+			}
+	}
+	action_queue[hole] = action_queue[action_queue_size - 1];
+	action_queue_size--;
+}
+
 parent_action_t* dequeue() {
     parent_action_t* top = action_queue[0];
-    size_t hole = 0;
-    while(hole * 2 + 2 < action_queue_size) {
-        size_t child = hole * 2 + 1;
-        if(COMPARE(action_queue[child], >, action_queue[child + 1])) {
-            child++;
-        }
-        if(COMPARE(action_queue[action_queue_size - 1], >, action_queue[child])) {
-            action_queue[hole] = action_queue[child];
-            hole = child;
-        } else {
-					break;
-        }
-    }
-    action_queue[hole] = action_queue[action_queue_size - 1];
-    action_queue_size--;
+		remove_index(0);
     return top;
+}
+
+void action_queue_remove(parent_action_t* parent) {
+	for (size_t i = 0; i < action_queue_actual_size; i++) {
+		if (!strcmp(parent->name, action_queue[i]->name)) {
+			// found in queue, remove
+			remove_index(i);
+			return;
+		}
+	}
 }
 
 parent_action_t* peek() {

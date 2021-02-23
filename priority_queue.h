@@ -12,6 +12,7 @@ void init_queue();
 void enqueue(parent_action_t* action);
 parent_action_t* dequeue();
 parent_action_t* peek();
+void action_queue_remove(parent_action_t* action);
 #ifndef NDEBUG
 void print_queue();
 #endif
