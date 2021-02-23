@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <time.h>
 #include <stdint.h>
+#include <pthread.h>
 
 struct child_action;
 
@@ -17,7 +18,7 @@ typedef struct parent_action {
 	size_t count; // the number of times this action has happened within the time limit
 	clock_t time_last;  
 	bool needs_wait;
-	uint32_t lock;
+	pthread_mutex_t lock;
 } parent_action_t;
 
 typedef struct child_action {
@@ -27,6 +28,7 @@ typedef struct child_action {
 	size_t *undoes;
 	size_t num_undos;
 	size_t time_limit;
+	bool needs_wait;
 } child_action_t;
 
 #endif
