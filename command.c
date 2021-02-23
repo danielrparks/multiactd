@@ -6,6 +6,7 @@
 #include <sys/wait.h>
 #include "hash.h"
 #include "priority_queue.h"
+#include "waiter.h"
 
 static void server_exit(int fd, int code, char* error) {
 	write(fd, &code, sizeof(code));
@@ -74,6 +75,7 @@ void do_command(int fd) {
 			// send to waiter thread
 			pthread_mutex_lock(&action_queue_mutex);
 			enqueue(parent);
+			pthread_cond_broadcast(&waiter_wakeup);
 			pthread_mutex_unlock(&action_queue_mutex);
 		} else {
 			// run the command immediately
@@ -91,6 +93,7 @@ void do_command(int fd) {
 		if (child->needs_wait) {
 			pthread_mutex_lock(&action_queue_mutex);
 			enqueue(parent);
+			pthread_cond_broadcast(&waiter_wakeup);
 			pthread_mutex_unlock(&action_queue_mutex);
 		} else {
 			parent->count++;
