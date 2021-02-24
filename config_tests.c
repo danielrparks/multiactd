@@ -2,6 +2,6 @@
 #include "config.h"
 
 int main() {
-    char *filename = "example_config";
+    char *filename = "config_examples/basic";
     parse_config(filename);
 }
