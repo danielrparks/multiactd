@@ -6,8 +6,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-pthread_mutex_t action_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 #define COMPARE(x, y, z) COMPARE_TIMESPEC(x->time_next, y, z->time_next)
 
 static size_t action_queue_actual_size;
