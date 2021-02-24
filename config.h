@@ -12,6 +12,7 @@ bool comment_line();
 void readline();
 void read_parent_arguments(parent_action_t* parent);
 void read_children_arguments(child_action_t* child);
+char* get_first_word();
 
 
 #endif
