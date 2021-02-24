@@ -29,7 +29,6 @@ void parse_config(char* fname) {
     }
 
     parent_action_t* parent = build_parent();
-    put_action(parent);
 
     if (ferror(input_file)) {
         perror("The following error occurred");
@@ -116,11 +115,13 @@ void read_children_arguments(child_action_t* child) {
 }
 
 // TODO make sure you copy the buffer like you did in first word
-bool comment_line() {
-    char* c = strtok(buffer, delimiter_characters);
-    if (c[0] == '#') {
+bool ignore_line() {
+    char* first = get_first_word();
+    // we want to ignore commented lines and blank lines
+    if (first == NULL || first[0] == '#') {
         return true;
     }
+    free(first);
     return false;
 }
 
@@ -128,18 +129,21 @@ char* get_first_word() {
     char* temp_buffer = malloc(BUFFER_SIZE + 1);
     temp_buffer = strcpy(temp_buffer, buffer);
     char* c = strtok(temp_buffer, delimiter_characters);
+    if(c == NULL) { 
+        return NULL;
+    }
     char* first = malloc(strlen(c) + 1);
     first = strcpy(first, c);
     return first;
 }
 
 void readline() {
-    if (end_of_file) {
+    if(end_of_file) {
         return;
     }
-    // TODO change to this later, make sure you change comment_line to work
-    /* while(comment_line()) { */
-    /* end_of_file = fgets(buffer, BUFFER_SIZE, input_file) == NULL; */
-    /* } */
     end_of_file = fgets(buffer, BUFFER_SIZE, input_file) == NULL;
+    // ignore commented lines and blank lines
+    while (ignore_line() && !end_of_file) {
+        end_of_file = fgets(buffer, BUFFER_SIZE, input_file) == NULL;
+    }
 }
