@@ -55,11 +55,19 @@ int main(int argc, char* argv[]) {
 				break;
 		}
 	}
+	int err;
+	if (daemonize) {
+		err = daemon(1, 0);
+		if (err) {
+			perror(argv[0]);
+			exit(1);
+		}
+	}
 	for (size_t i = 0; i < num_config_files; i++) {
 		parse_config(config_files[i]);
 	}
 	pthread_t waiter;
-	int err = pthread_create(&waiter, NULL, waiter_thread, 0);
+	err = pthread_create(&waiter, NULL, waiter_thread, 0);
 	if (err) {
 		perror(argv[0]);
 		exit(1);
