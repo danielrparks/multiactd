@@ -20,7 +20,6 @@ typedef struct parent_action {
 	struct timespec time_next;
 	bool needs_wait;
 	bool in_queue;
-	size_t time_limit;
 	pthread_mutex_t lock;
 } parent_action_t;
 
