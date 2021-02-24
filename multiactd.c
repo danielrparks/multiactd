@@ -13,6 +13,10 @@
 #include "config.h"
 #include "waiter.h"
 #include "command.h"
+#include "priority_queue.h"
+
+pthread_mutex_t action_queue_mutex;
+pthread_mutexattr_t global_mutex_attrs;
 
 int main(int argc, char* argv[]) {
 	const char* short_opts = "c:d";
@@ -65,6 +69,13 @@ int main(int argc, char* argv[]) {
 	}
 	for (size_t i = 0; i < num_config_files; i++) {
 		parse_config(config_files[i]);
+	}
+	err = pthread_mutexattr_init(&global_mutex_attrs);
+	err |= pthread_mutexattr_setpshared(&global_mutex_attrs, PTHREAD_PROCESS_SHARED);
+	err |= pthread_mutex_init(&action_queue_mutex, &global_mutex_attrs);
+	if (err) {
+		fprintf(stderr, "%s: mutexattr error", argv[0]);
+		exit(1);
 	}
 	pthread_t waiter;
 	err = pthread_create(&waiter, NULL, waiter_thread, 0);

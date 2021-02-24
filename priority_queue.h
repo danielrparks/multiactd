@@ -7,6 +7,7 @@
 
 extern size_t action_queue_size;
 extern pthread_mutex_t action_queue_mutex;
+extern pthread_mutexattr_t global_mutex_attrs;
 
 void init_queue();
 void enqueue(parent_action_t* action);
