@@ -15,9 +15,7 @@ char buffer[BUFFER_SIZE];
 bool end_of_file;
 const char* delimiter_characters = " \t\n";
 
-// TODO deal with undoes
 // TODO deal with syntax errors
-// TODO deal with multiple parent actions (while loop in parse_config)
 // TODO deal with an default time if there's one at the top of the file
 // TODO set a default time if there's on default time at the top
 
@@ -120,6 +118,21 @@ void read_children_arguments(child_action_t* child) {
     } else if (strcmp(descriptor, "time") == 0) {
         char* time = strtok(NULL, delimiter_characters);
         child->time_limit = atoi(time);
+    } else if (strcmp(descriptor, "undo") == 0) {
+        size_t num_undoes = 0;
+        size_t max_undoes = 5;
+        child->undoes = calloc(max_undoes, sizeof(size_t));
+        char* action = strtok(NULL, delimiter_characters);
+        while (action != NULL) {
+            if (num_undoes == max_undoes) {
+                max_undoes *= 2;
+                child->undoes = realloc(child->undoes, max_undoes);
+            }
+            child->undoes[num_undoes] = atoi(action);
+            action = strtok(NULL, delimiter_characters);
+            num_undoes++;
+        }
+        child->num_undos = num_undoes;
     }
 }
 

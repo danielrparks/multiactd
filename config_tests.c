@@ -28,4 +28,24 @@ int main() {
 
     assert(parent2->num_children == 4);
     assert(strcmp(parent2->command, "\"Action 2 called!\"") == 0);
+
+    filename = "config_examples/undo_actions";
+    parse_config(filename);
+    parent_action_t* parent3 = get_action("act4");
+    parent_action_t* parent4 = get_action("act5");
+    
+    assert(parent3 != NULL);
+    assert(parent4 != NULL);
+
+    assert(parent3->num_children == 3);
+    assert(strcmp(parent1->command, "\"Action 1 called!\"") == 0);
+    assert(parent3->children[0].num_undos == 1);
+    assert(parent3->children[0].undoes[0] == 0);
+    assert(parent3->children[1].num_undos == 0);
+    assert(parent3->children[2].num_undos == 2);
+    assert(parent3->children[2].undoes[0] == 2);
+    assert(parent3->children[2].undoes[1] == 0);
+
+    assert(parent4->num_children == 4);
+    assert(strcmp(parent2->command, "\"Action 2 called!\"") == 0);
 }
