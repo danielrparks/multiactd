@@ -1,4 +1,5 @@
 #include "hash.h"
+#include "action.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -38,3 +39,20 @@ void put_action(parent_action_t* val) {
 	}
 	*toput = val;
 }
+
+//this is definitely not right but i'm just putting it here for reference
+/*     for(int i =0; i < HASH_TABLE_SIZE; i++ ) { */
+/*         free_elements(action_hash_table[i]); */
+/*     } */
+/* } */
+
+/* void free_elements(parent_action_t *parent) { */
+/*     if(parent) { */
+/*         free_elements(parent->value_next); */
+/*         free(parent->children); */
+/*         free(parent->command); */
+/*         free(parent->name); */
+/*         free(parent->command); */
+/*         free(parent); */
+/*     } */
+/* } */

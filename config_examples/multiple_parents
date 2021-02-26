@@ -1,0 +1,24 @@
+# begin actions
+act act1
+	command notify-send "Action 1 called!"
+	next
+		command notify-send "Action 1 called twice instead"
+		time 500
+	next
+		command notify-send "Action 1 called a third time too"
+		time 500
+	next
+		command notify-send "Action 1 called four times fast"
+		time 200
+
+act act2
+	command notify-send "Action 2 called!"
+	next
+		command notify-send "Action 2 called again"
+	next
+		command notify-send "Action 2 called again again"
+	next
+		command notify-send "Action 2 called again again again"
+	next
+		command notify-send "Action 2 called too many times"
+		time 2000

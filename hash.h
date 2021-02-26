@@ -11,4 +11,8 @@ parent_action_t* get_action(const char* key);
 
 void put_action(parent_action_t* val);
 
+void clear_table();
+
+void free_elements(parent_action_t *parent);
+
 #endif

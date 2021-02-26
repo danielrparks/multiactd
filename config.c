@@ -8,6 +8,7 @@
 // NOTE TO READER this code only works on the config_examples/basic file. It
 // does not work on the example config yet
 #define BUFFER_SIZE 1024
+#define DEFAULT_TIME 500;
 
 FILE* input_file;
 char buffer[BUFFER_SIZE];
@@ -17,7 +18,6 @@ const char* delimiter_characters = " \t\n";
 // TODO deal with undoes
 // TODO deal with syntax errors
 // TODO deal with multiple parent actions (while loop in parse_config)
-// TODO deal with blank lines and commented lines
 // TODO deal with an default time if there's one at the top of the file
 // TODO set a default time if there's on default time at the top
 
@@ -28,7 +28,11 @@ void parse_config(char* fname) {
         fprintf(stderr, "Unable to open file %s\n", fname);
     }
 
-    parent_action_t* parent = build_parent();
+    readline();
+    while (!end_of_file) {
+        parent_action_t* parent = build_parent();
+        put_action(parent);
+    }
 
     if (ferror(input_file)) {
         perror("The following error occurred");
@@ -39,17 +43,15 @@ void parse_config(char* fname) {
 
 parent_action_t* build_parent() {
     // example:  act act1
-    readline();
-
     strtok(buffer, delimiter_characters);
     char* parent_name = strtok(NULL, delimiter_characters);
 
     parent_action_t* parent = calloc(1, sizeof(parent_action_t));
     parent->name = malloc(strlen(parent_name) + 1);
     parent->name = strcpy(parent->name, parent_name);
+    parent->time_limit = DEFAULT_TIME;
     readline();
-    // STRTOK MODIFIES THE STRING REMEMBER VERY CLEARLY
-    char* temp_buffer = malloc(BUFFER_SIZE + 1);
+
     char* first = get_first_word();
     while (strcmp("next", first) != 0) {
         read_parent_arguments(parent);
@@ -62,13 +64,19 @@ parent_action_t* build_parent() {
     int max_num_children = 10;
     parent->children = calloc(max_num_children, sizeof(child_action_t));
 
-    while (strcmp(first, "next") == 0 && !end_of_file && strcmp(first, "act")) {
+    // the act part is redundant i suppose
+    while (strcmp(first, "next") == 0 && !end_of_file && strcmp(first, "act") != 0) {
         parent->children[num_children] = *build_child();
         num_children++;
+        // resize if there's too many children
+        if (num_children == max_num_children) {
+            max_num_children *= 2;
+            parent->children = realloc(
+                parent->children, max_num_children * sizeof(child_action_t));
+        }
         first = get_first_word();
     }
     parent->num_children = num_children;
-
     return parent;
 }
 
@@ -76,6 +84,7 @@ child_action_t* build_child() {
     child_action_t* child = calloc(1, sizeof(child_action_t));
     readline();
     char* first = get_first_word();
+    child->time_limit = DEFAULT_TIME;
 
     while (strcmp(first, "next") != 0 && !end_of_file &&
            strcmp(first, "act") != 0) {
@@ -91,7 +100,7 @@ void read_parent_arguments(parent_action_t* parent) {
     char* descriptor = strtok(buffer, delimiter_characters);
     if (strcmp(descriptor, "command") == 0) {
         strtok(NULL, delimiter_characters);
-        char* command_name = strtok(NULL, "");
+        char* command_name = strtok(NULL, "\n");
         parent->command = malloc(strlen(command_name) + 1);
         parent->command = strcpy(parent->command, command_name);
     } else if (strcmp(descriptor, "time") == 0) {
