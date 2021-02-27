@@ -56,6 +56,7 @@ int main(int argc, char* argv[]) {
 				break;
 			default:
 				fprintf(stderr, "Usage: %s [-c config] [-d] command\n", argv[0]);
+				exit(1);
 				break;
 		}
 	}
